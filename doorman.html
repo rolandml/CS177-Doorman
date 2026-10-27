@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950 text-slate-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IT Admin Access Intelligence & Policy Approval Engine</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f6ff',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            900: '#1e3a8a',
+                            950: '#0b1329',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        code, pre {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(51, 65, 85, 0.8);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(71, 85, 105, 1);
+        }
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glass-card {
+            background: rgba(30, 41, 59, 0.5);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+<body class="h-full overflow-hidden flex flex-col bg-slate-950 text-slate-100">
+
+    <!-- Top Navigation Bar -->
+    <header class="h-16 border-b border-slate-800 bg-slate-900/80 backdrop-blur-md px-6 flex items-center justify-between shrink-0 z-20">
+        <div class="flex items-center space-x-4">
+            <div class="h-9 w-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-blue-500/20">
+                <i data-lucide="shield-check" class="w-5 h-5 text-white"></i>
+            </div>
+            <div>
+                <div class="flex items-center space-x-2">
+                    <h1 class="font-bold text-slate-100 text-base tracking-tight">AccessGuard AI</h1>
+                    <span class="px-2 py-0.5 text-[10px] font-semibold tracking-wide uppercase bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-full">v2.4 Enterprise</span>
+                </div>
+                <p class="text-xs text-slate-400">Context-Aware Tool Access Governance & Decision Engine</p>
+            </div>
+        </div>
+
+        <!-- System Summary Metrics Bar -->
+        <div class="hidden lg:flex items-center space-x-6 border-x border-slate-800 px-6 py-1">
+            <div class="flex flex-col">
+                <span class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Queue Status</span>
+                <span class="text-sm font-semibold text-slate-200" id="stat-pending-count">8 Requests</span>
+            </div>
+            <div class="h-8 w-px bg-slate-800"></div>
+            <div class="flex flex-col">
+                <span class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Auto-Approve Rate</span>
+                <span class="text-sm font-semibold text-emerald-400">68.4%</span>
+            </div>
+            <div class="h-8 w-px bg-slate-800"></div>
+            <div class="flex flex-col">
+                <span class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Policy Compliance</span>
+                <span class="text-sm font-semibold text-blue-400">99.2%</span>
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-3">
+            <button onclick="openSimulatorModal()" class="flex items-center space-x-2 px-3.5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-medium transition shadow-sm shadow-blue-600/30">
+                <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                <span>Simulate Request</span>
+            </button>
+            <button onclick="openPolicyManagerModal()" class="flex items-center space-x-2 px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-medium border border-slate-700 transition">
+                <i data-lucide="book-open" class="w-4 h-4"></i>
+                <span>Policy Rules</span>
+            </button>
+            <div class="h-8 w-px bg-slate-800 mx-1"></div>
+            <div class="flex items-center space-x-3 pl-2">
+                <div class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-xs font-semibold text-slate-300">
+                    AD
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace Layout -->
+    <div class="flex-1 flex overflow-hidden relative">
+
+        <!-- Sidebar Navigation -->
+        <aside class="w-16 md:w-56 bg-slate-900/50 border-r border-slate-800/80 flex flex-col justify-between shrink-0">
+            <div class="p-3 space-y-6">
+                <!-- Navigation Links -->
+                <div class="space-y-1">
+                    <div class="px-3 py-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider hidden md:block">Workflow</div>
+                    <button class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg bg-blue-600/15 text-blue-400 border border-blue-500/20 font-medium text-xs">
+                        <i data-lucide="inbox" class="w-4 h-4"></i>
+                        <span class="hidden md:inline">Access Queue</span>
+                        <span class="ml-auto hidden md:inline bg-blue-500/20 text-blue-300 text-[10px] px-2 py-0.5 rounded-full font-bold" id="badge-pending">8</span>
+                    </button>
+                    <button onclick="alert('Feature demo: Displaying all historical decisions log.')" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-slate-400 hover:bg-slate-800/60 hover:text-slate-200 transition text-xs">
+                        <i data-lucide="history" class="w-4 h-4"></i>
+                        <span class="hidden md:inline">Audit Logs</span>
+                    </button>
+                    <button onclick="alert('Feature demo: Analytics suite enabled.')" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-slate-400 hover:bg-slate-800/60 hover:text-slate-200 transition text-xs">
+                        <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+                        <span class="hidden md:inline">Analytics & Metrics</span>
+                    </button>
+                </div>
+
+                <!-- Context Connectors Status -->
+                <div class="space-y-2 pt-4 border-t border-slate-800/80 hidden md:block">
+                    <div class="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Context Sync</div>
+                    <div class="px-3 py-1.5 flex items-center justify-between text-xs text-slate-400 rounded hover:bg-slate-800/40">
+                        <span class="flex items-center space-x-2">
+                            <i data-lucide="message-square" class="w-3.5 h-3.5 text-emerald-400"></i>
+                            <span>Slack Engine</span>
+                        </span>
+                        <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    </div>
+                    <div class="px-3 py-1.5 flex items-center justify-between text-xs text-slate-400 rounded hover:bg-slate-800/40">
+                        <span class="flex items-center space-x-2">
+                            <i data-lucide="ticket" class="w-3.5 h-3.5 text-blue-400"></i>
+                            <span>Jira Workspace</span>
+                        </span>
+                        <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+                    </div>
+                    <div class="px-3 py-1.5 flex items-center justify-between text-xs text-slate-400 rounded hover:bg-slate-800/40">
+                        <span class="flex items-center space-x-2">
+                            <i data-lucide="shield" class="w-3.5 h-3.5 text-purple-400"></i>
+                            <span>SOC2 & Identity</span>
+                        </span>
+                        <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4 border-t border-slate-800/80 text-center md:text-left">
+                <div class="hidden md:block text-[11px] text-slate-500">
+                    Engine status: <span class="text-emerald-400 font-medium">Active (GPT-4o Context)</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area: Left Requests Table / Right Inspection Drawer -->
+        <main class="flex-1 flex flex-col md:flex-row overflow-hidden bg-slate-950">
+            
+            <!-- Queue List & Filter Panel -->
+            <div class="flex-1 flex flex-col h-full border-r border-slate-800/80 overflow-hidden">
+                
+                <!-- Filter & Search Header -->
+                <div class="p-4 bg-slate-900/40 border-b border-slate-800/80 flex flex-wrap items-center justify-between gap-3 shrink-0">
+                    <div class="flex items-center space-x-2 flex-1 min-w-[200px]">
+                        <div class="relative w-full">
+                            <i data-lucide="search" class="w-4 h-4 absolute left-3 top-2.5 text-slate-500"></i>
+                            <input type="text" id="search-input" onkeyup="filterRequests()" placeholder="Search user, tool, project or ticket..." class="w-full bg-slate-900 border border-slate-800 rounded-lg pl-9 pr-4 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500 transition">
+                        </div>
+                    </div>
+
+                    <div class="flex items-center space-x-2">
+                        <!-- Risk Filter -->
+                        <select id="filter-risk" onchange="filterRequests()" class="bg-slate-900 border border-slate-800 text-xs text-slate-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-blue-500">
+                            <option value="ALL">All Risk Levels</option>
+                            <option value="LOW">Low Risk</option>
+                            <option value="MEDIUM">Medium Risk</option>
+                            <option value="HIGH">High Risk</option>
+                            <option value="CRITICAL">Critical Risk</option>
+                        </select>
+
+                        <!-- Decision Filter -->
+                        <select id="filter-recommendation" onchange="filterRequests()" class="bg-slate-900 border border-slate-800 text-xs text-slate-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-blue-500">
+                            <option value="ALL">All AI Recommendations</option>
+                            <option value="AUTO_APPROVE">Auto-Approve</option>
+                            <option value="GUARDRAIL">Approve w/ Guardrails</option>
+                            <option value="MANUAL_REVIEW">Manual Review</option>
+                            <option value="DENY">Deny - Policy Violation</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Request Table Container -->
+                <div class="flex-1 overflow-y-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-slate-900/90 sticky top-0 z-10 text-[11px] font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+                            <tr>
+                                <th class="py-3 px-4">Employee</th>
+                                <th class="py-3 px-3">Requested Tool</th>
+                                <th class="py-3 px-3">Risk Level</th>
+                                <th class="py-3 px-3">AI Recommendation</th>
+                                <th class="py-3 px-3">Confidence</th>
+                                <th class="py-3 px-4 text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="request-table-body" class="divide-y divide-slate-800/60 text-xs">
+                            <!-- Rows rendered via JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Footer Summary info -->
+                <div class="p-3 bg-slate-900/60 border-t border-slate-800 text-xs text-slate-400 flex justify-between items-center shrink-0">
+                    <span id="showing-count">Showing 8 requests</span>
+                    <span class="text-[11px] text-slate-500">Click any row to inspect context reasoning & grant access</span>
+                </div>
+            </div>
+
+            <!-- Drawer / AI Reasoning & Context Panel -->
+            <div id="detail-panel" class="w-full md:w-[580px] lg:w-[640px] bg-slate-900/90 flex flex-col h-full border-l border-slate-800/80 overflow-hidden shadow-2xl relative">
+                <!-- Content generated by JS when row selected -->
+            </div>
+
+        </main>
+    </div>
+
+    <!-- SIMULATOR MODAL -->
+    <div id="simulator-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl shadow-2xl flex flex-col overflow-hidden max-h-[90vh]">
+            <div class="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-900/80">
+                <div class="flex items-center space-x-2">
+                    <div class="p-2 bg-blue-500/10 rounded-lg text-blue-400">
+                        <i data-lucide="sparkles" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-slate-100 text-sm">Synthetic Access Request Simulator</h3>
+                        <p class="text-xs text-slate-400">Test AI recommendation engine against custom employee & context inputs</p>
+                    </div>
+                </div>
+                <button onclick="closeSimulatorModal()" class="text-slate-400 hover:text-slate-200">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto space-y-4 text-xs">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block font-medium text-slate-300 mb-1">Employee Name</label>
+                        <input type="text" id="sim-name" value="Elena Rostova" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-200 focus:border-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block font-medium text-slate-300 mb-1">Role / Department</label>
+                        <input type="text" id="sim-role" value="Lead Data Scientist (Data Infra)" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-200 focus:border-blue-500 outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block font-medium text-slate-300 mb-1">Requested Tool / Scope</label>
+                        <input type="text" id="sim-tool" value="Snowflake Data Warehouse (Production DB)" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-200 focus:border-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block font-medium text-slate-300 mb-1">Access Level Needed</label>
+                        <select id="sim-level" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-200 focus:border-blue-500 outline-none">
+                            <option value="Read-Only">Read-Only / Analyst</option>
+                            <option value="Write / Admin" selected>Write / Admin Access</option>
+                            <option value="Full Prod Access">Full Production Workspace</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-medium text-slate-300 mb-1">Slack Conversation / Context Thread</label>
+                    <textarea id="sim-slack" rows="3" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-slate-200 focus:border-blue-500 outline-none">#proj-customer-churn (10 mins ago)
+Elena: @tech-lead I need write access to Snowflake Prod tables to train the Q4 churn prediction pipeline.
+Marcus (Tech Lead): Approved, please open Jira ticket JIRA-8812 and cite customer PII data scrub protocol.</textarea>
+                </div>
+
+                <div>
+                    <label class="block font-medium text-slate-300 mb-1">Jira Ticket / Business Justification</label>
+                    <input type="text" id="sim-jira" value="JIRA-8812: Machine Learning Churn Pipeline Production Deployment" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-200 focus:border-blue-500 outline-none">
+                </div>
+
+                <div class="p-3 bg-blue-950/30 border border-blue-800/40 rounded-xl flex items-start space-x-3">
+                    <i data-lucide="info" class="w-4 h-4 text-blue-400 shrink-0 mt-0.5"></i>
+                    <p class="text-blue-300 text-[11px]">The recommendation engine will cross-reference internal SOC2 policies, department matrix, and conversation context to assign a risk score and suggested action.</p>
+                </div>
+            </div>
+
+            <div class="p-4 border-t border-slate-800 bg-slate-900/80 flex justify-end space-x-3">
+                <button onclick="closeSimulatorModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg font-medium text-xs">Cancel</button>
+                <button onclick="runSimulation()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-medium text-xs flex items-center space-x-2">
+                    <i data-lucide="play" class="w-3.5 h-3.5"></i>
+                    <span>Run AI Evaluation</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- POLICY RULES MODAL -->
+    <div id="policy-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-3xl shadow-2xl flex flex-col overflow-hidden max-h-[90vh]">
+            <div class="p-4 border-b border-slate-800 flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <i data-lucide="shield" class="w-5 h-5 text-purple-400"></i>
+                    <h3 class="font-bold text-slate-100 text-sm">Active Enterprise Compliance & Policy Rules</h3>
+                </div>
+                <button onclick="closePolicyManagerModal()" class="text-slate-400 hover:text-slate-200">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto space-y-4 text-xs">
+                <div class="p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="font-semibold text-purple-400 text-xs">POL-SOC2-01: Production AWS & Infrastructure Access</span>
+                        <span class="px-2 py-0.5 bg-purple-500/10 text-purple-300 rounded text-[10px]">Strict Enforcement</span>
+                    </div>
+                    <p class="text-slate-300">Requires explicit Tech Lead approval in public Slack/Jira + active sprint ticket. Any production write/admin access requested by contractors or junior staff MUST trigger time-bounded access (Max 8 hours) with MFA guardrails.</p>
+                </div>
+
+                <div class="p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="font-semibold text-emerald-400 text-xs">POL-DEPT-04: Standard SaaS Tooling (Figma, Notion, Slack)</span>
+                        <span class="px-2 py-0.5 bg-emerald-500/10 text-emerald-300 rounded text-[10px]">Auto-Approve Eligible</span>
+                    </div>
+                    <p class="text-slate-300">Employees requesting standard read/editor licenses for designated departmental tools automatically qualify if role matches department software matrix (e.g. Design -> Figma Pro).</p>
+                </div>
+
+                <div class="p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="font-semibold text-amber-400 text-xs">POL-FIN-09: Financial Data & Billing Portals (Stripe, NetSuite)</span>
+                        <span class="px-2 py-0.5 bg-amber-500/10 text-amber-300 rounded text-[10px]">Mandatory Escalation</span>
+                    </div>
+                    <p class="text-slate-300">Requires VP of Finance sign-off. If request originates outside Finance or Executive teams, recommendation automatically triggers DENY / Manual Escalation.</p>
+                </div>
+
+                <div class="p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="font-semibold text-red-400 text-xs">POL-SEC-12: Zero Trust & Offboarding Sanity</span>
+                        <span class="px-2 py-0.5 bg-red-500/10 text-red-300 rounded text-[10px]">Critical Guardrail</span>
+                    </div>
+                    <p class="text-slate-300">If employee identity status shows pending transfer, contract expiration within 14 days, or flagged anomalous Slack context, deny automated approval and flag high risk score.</p>
+                </div>
+            </div>
+
+            <div class="p-4 border-t border-slate-800 bg-slate-900/80 flex justify-end">
+                <button onclick="closePolicyManagerModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg font-medium text-xs">Close Policy Engine View</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- JAVASCRIPT LOGIC & MOCK DATA -->
+    <script>
+        // --- INITIAL MOCK DATA context ---
+        const initialRequests = [
+            {
+                id: "REQ-9401",
+                employee: {
+                    name: "Alex Rivera",
+                    email: "alex.rivera@acme.io",
+                    avatar: "AR",
+                    role: "Senior Backend Engineer",
+                    department: "Core Platform",
+                    manager: "Sarah Jenkins (VP Eng)",
+                    tenure: "2.5 years"
+                },
+                tool: "AWS Production (US-East)",
+                accessType: "EC2 Write / Admin Console",
+                riskLevel: "HIGH", // LOW, MEDIUM, HIGH, CRITICAL
+                riskScore: 78,
+                recommendation: "GUARDRAIL", // AUTO_APPROVE, GUARDRAIL, MANUAL_REVIEW, DENY
+                recommendationTitle: "Approve with 8-Hour Guardrail",
+                confidence: 94,
+                timestamp: "10 mins ago",
+                slackContext: {
+                    channel: "#dev-backend-ops",
+                    snippet: "Alex: Hey @ops-team, I need temporary elevated AWS EC2 write permissions to patch the memory leak on Apollo production cluster.\nSarah (Manager): Approved for sprint #44 deployment. Please link Jira ticket.",
+                    verified: true
+                },
+                jiraContext: {
+                    ticket: "PLAT-4819",
+                    summary: "[Hotfix] Patch Memory Leak in Apollo Auth Cluster",
+                    status: "In Progress",
+                    sprint: "Sprint 44 (Current)"
+                },
+                policyMatch: {
+                    ruleId: "POL-SOC2-01",
+                    title: "SOC2 Elevated Infrastructure Provisioning",
+                    detail: "Production access requires manager sign-off and active Jira ticket. Grant must be strictly time-bound."
+                },
+                aiReasoning: [
+                    "Verified manager approval from VP of Eng (@Sarah Jenkins) in #dev-backend-ops.",
+                    "Matched active Jira Hotfix ticket PLAT-4819 in current active Sprint 44.",
+                    "Role (Senior Backend Engineer) aligns with requested AWS infrastructure scope.",
+                    "Policy POL-SOC2-01 mandates temporary time-bounded access (8 Hours) rather than permanent permission."
+                ]
+            },
+            {
+                id: "REQ-9402",
+                employee: {
+                    name: "Chloe Zhao",
+                    email: "chloe.z@acme.io",
+                    avatar: "CZ",
+                    role: "Product Designer",
+                    department: "UX & Design",
+                    manager: "David Chen (Design Dir)",
+                    tenure: "8 months"
+                },
+                tool: "Figma Enterprise",
+                accessType: "Editor Seat",
+                riskLevel: "LOW",
+                riskScore: 12,
+                recommendation: "AUTO_APPROVE",
+                recommendationTitle: "Auto-Approve Request",
+                confidence: 99,
+                timestamp: "25 mins ago",
+                slackContext: {
+                    channel: "#design-system",
+                    snippet: "Chloe: Requesting editor license for the upcoming Q4 Mobile Redesign UI kit.\nDavid (Dir): Go ahead, we have 4 allocated Figma editor seats available in design budget.",
+                    verified: true
+                },
+                jiraContext: {
+                    ticket: "DES-104",
+                    summary: "Q4 Mobile App Design System Upgrade",
+                    status: "Ready for Dev",
+                    sprint: "Design Q4"
+                },
+                policyMatch: {
+                    ruleId: "POL-DEPT-04",
+                    title: "Standard Software Allocation Matrix",
+                    detail: "Design department employees automatically qualify for Figma Editor seats."
+                },
+                aiReasoning: [
+                    "Role (Product Designer) perfectly matches Department Software Matrix for Figma Enterprise.",
+                    "Unused licenses available under current SaaS tier budget.",
+                    "Zero security risk detected for design asset workspace."
+                ]
+            },
+            {
+                id: "REQ-9403",
+                employee: {
+                    name: "Devon Miller",
+                    email: "devon.m@acme.io",
+                    avatar: "DM",
+                    role: "Junior QA Tester (Contractor)",
+                    department: "Quality Assurance",
+                    manager: "Rajesh Kumar (QA Lead)",
+                    tenure: "3 weeks"
+                },
+                tool: "Snowflake Data Warehouse",
+                accessType: "Prod DB FULL WRITE & DELETE",
+                riskLevel: "CRITICAL",
+                riskScore: 92,
+                recommendation: "DENY",
+                recommendationTitle: "Deny - Policy Violation",
+                confidence: 96,
+                timestamp: "42 mins ago",
+                slackContext: {
+                    channel: "#qa-random",
+                    snippet: "Devon: Can someone drop me Snowflake root write keys? Need to drop tables to test staging script.\nRajesh: DO NOT drop tables in Prod! Use the staging warehouse instead.",
+                    verified: true
+                },
+                jiraContext: {
+                    ticket: "QA-881",
+                    summary: "Staging Pipeline Automated Test Run",
+                    status: "Open",
+                    sprint: "Sprint 44"
+                },
+                policyMatch: {
+                    ruleId: "POL-SEC-12",
+                    title: "Least Privilege & Data Protection Guardrail",
+                    detail: "Contractors and Junior QA staff are strictly prohibited from Production DB Write/Delete privileges."
+                },
+                aiReasoning: [
+                    "CRITICAL RISK: Requested FULL WRITE & DELETE on Production Snowflake database.",
+                    "Contractor status and short tenure (3 weeks) violate SOC2 data governance standard POL-SEC-12.",
+                    "Slack context shows manager (@Rajesh) explicitly warned against production database modification.",
+                    "Recommendation: Deny request and redirect user to Sandbox/Staging Snowflake environment."
+                ]
+            },
+            {
+                id: "REQ-9404",
+                employee: {
+                    name: "Samantha Vance",
+                    email: "s.vance@acme.io",
+                    avatar: "SV",
+                    role: "Growth Marketing Manager",
+                    department: "Marketing",
+                    manager: "Elena Rostova (CMO)",
+                    tenure: "1.2 years"
+                },
+                tool: "Datadog APM",
+                accessType: "Read-Only Dashboard",
+                riskLevel: "MEDIUM",
+                riskScore: 45,
+                recommendation: "MANUAL_REVIEW",
+                recommendationTitle: "Manual Review Required",
+                confidence: 81,
+                timestamp: "1 hour ago",
+                slackContext: {
+                    channel: "#marketing-tech",
+                    snippet: "Samantha: I want Datadog access to check landing page latencies after our ad campaign drop.",
+                    verified: true
+                },
+                jiraContext: {
+                    ticket: "MKT-302",
+                    summary: "Black Friday Campaign Traffic Analysis",
+                    status: "In Progress",
+                    sprint: "Marketing Q4"
+                },
+                policyMatch: {
+                    ruleId: "POL-DEPT-08",
+                    title: "Cross-Departmental Observability Access",
+                    detail: "Non-engineering personnel requesting telemetry tooling require SecOps approval."
+                },
+                aiReasoning: [
+                    "Marketing role requesting technical engineering telemetry tool (Datadog).",
+                    "Reasoning is valid (checking web campaign traffic metrics), but read-only role mapping is outside default Marketing matrix.",
+                    "Suggest granting Read-Only Marketing View or delegating via Google Analytics/Grafana board."
+                ]
+            },
+            {
+                id: "REQ-9405",
+                employee: {
+                    name: "Marcus Brody",
+                    email: "marcus.b@acme.io",
+                    avatar: "MB",
+                    role: "DevOps Engineer",
+                    department: "Infrastructure",
+                    manager: "Sarah Jenkins (VP Eng)",
+                    tenure: "3.1 years"
+                },
+                tool: "Okta Super Admin",
+                accessType: "Global IAM Management",
+                riskLevel: "HIGH",
+                riskScore: 84,
+                recommendation: "MANUAL_REVIEW",
+                recommendationTitle: "Escalate to VP & CISO",
+                confidence: 91,
+                timestamp: "2 hours ago",
+                slackContext: {
+                    channel: "#sec-ops",
+                    snippet: "Marcus: Need Okta Super Admin role to re-configure SAML SSO integration for Google Workspace migration.",
+                    verified: true
+                },
+                jiraContext: {
+                    ticket: "SEC-901",
+                    summary: "Enterprise SSO SAML Re-configuration",
+                    status: "Approved",
+                    sprint: "Infra Security"
+                },
+                policyMatch: {
+                    ruleId: "POL-IAM-02",
+                    title: "Identity Access Superuser Provisioning",
+                    detail: "Okta Super Admin changes require dual-custody authorization from CISO & SecOps Lead."
+                },
+                aiReasoning: [
+                    "Super Admin request carries system-wide privilege risk.",
+                    "Jira ticket SEC-901 exists and is approved, but dual-custody rule requires explicit CISO sign-off signature.",
+                    "Recommend escalation to CISO panel before releasing privileges."
+                ]
+            },
+            {
+                id: "REQ-9406",
+                employee: {
+                    name: "Liam O'Connor",
+                    email: "liam.oc@acme.io",
+                    avatar: "LO",
+                    role: "Frontend Developer",
+                    department: "Core Platform",
+                    manager: "Alex Rivera (Tech Lead)",
+                    tenure: "1.5 years"
+                },
+                tool: "GitHub Organization",
+                accessType: "Write Access to 'acme-mobile-app'",
+                riskLevel: "LOW",
+                riskScore: 18,
+                recommendation: "AUTO_APPROVE",
+                recommendationTitle: "Auto-Approve Request",
+                confidence: 98,
+                timestamp: "3 hours ago",
+                slackContext: {
+                    channel: "#mobile-dev",
+                    snippet: "Liam: Joining the React Native mobile team starting today. Need write access to acme-mobile-app repo.\nAlex: Welcome aboard Liam! Approved.",
+                    verified: true
+                },
+                jiraContext: {
+                    ticket: "MOB-12",
+                    summary: "Onboard Liam O'Connor to Mobile Repo",
+                    status: "Done",
+                    sprint: "Mobile Sprint 12"
+                },
+                policyMatch: {
+                    ruleId: "POL-GIT-01",
+                    title: "Repository Write Permission Standard",
+                    detail: "Engineering team members assigned to project repositories are pre-approved for write access."
+                },
+                aiReasoning: [
+                    "Full alignment with employee role (Frontend Dev) and active team assignment.",
+                    "Explicit Slack confirmation from Tech Lead Alex Rivera.",
+                    "Branch protection rules active on repo (Pull Requests require 2 reviews)."
+                ]
+            },
+            {
+                id: "REQ-9407",
+                employee: {
+                    name: "Tanya Sterling",
+                    email: "t.sterling@acme.io",
+                    avatar: "TS",
+                    role: "Financial Analyst",
+                    department: "Finance",
+                    manager: "Robert Vance (CFO)",
+                    tenure: "4 years"
+                },
+                tool: "Stripe Billing Portal",
+                accessType: "Full Financial Reports & Payouts",
+                riskLevel: "HIGH",
+                riskScore: 72,
+                recommendation: "GUARDRAIL",
+                recommendationTitle: "Approve Read-Only (Deny Payouts)",
+                confidence: 89,
+                timestamp: "4 hours ago",
+                slackContext: {
+                    channel: "#finance-ops",
+                    snippet: "Tanya: Need Stripe dashboard access for Q3 revenue reconciliation.\nRobert: Approved for reporting, but ensure payout modification permissions remain restricted.",
+                    verified: true
+                },
+                jiraContext: {
+                    ticket: "FIN-440",
+                    summary: "Q3 Audit Revenue Audit & Reconciliation",
+                    status: "In Progress",
+                    sprint: "Q3 Close"
+                },
+                policyMatch: {
+                    ruleId: "POL-FIN-09",
+                    title: "Financial System Least Privilege",
+                    detail: "Financial Analysts require Read/Reporting tier. Payout & Bank Account modification requires CFO signature."
+                },
+                aiReasoning: [
+                    "Tanya requires revenue audit data for Q3 close (Valid business need).",
+                    "Requested scope (Full Payouts) exceeds business requirement.",
+                    "Recommend downgrading scope to 'Stripe Financial Analyst (Read-Only)' with 30-day auto-expire."
+                ]
+            },
+            {
+                id: "REQ-9408",
+                employee: {
+                    name: "Vikram Patel",
+                    email: "vikram.p@acme.io",
+                    avatar: "VP",
+                    role: "Security Engineer",
+                    department: "SecOps",
+                    manager: "Elena Vance (CISO)",
+                    tenure: "2 years"
+                },
+                tool: "Snyk Vulnerability Scanner",
+                accessType: "Admin & Integrations",
+                riskLevel: "LOW",
+                riskScore: 22,
+                recommendation: "AUTO_APPROVE",
+                recommendationTitle: "Auto-Approve Request",
+                confidence: 97,
+                timestamp: "5 hours ago",
+                slackContext: {
+                    channel: "#secops-internal",
+                    snippet: "Vikram: Setting up Snyk container scanning in GitHub Actions pipeline.",
+                    verified: true
+                },
+                jiraContext: {
+                    ticket: "SEC-1022",
+                    summary: "Automate Container Vulnerability Scans in CI/CD",
+                    status: "In Progress",
+                    sprint: "Security Q4"
+                },
+                policyMatch: {
+                    ruleId: "POL-SEC-03",
+                    title: "SecOps Tooling Autonomy",
+                    detail: "Security team members possess standard clearance for vulnerability scanner management."
+                },
+                aiReasoning: [
+                    "Security Engineer role naturally covers vulnerability scanning tooling.",
+                    "Verified CI/CD automation ticket SEC-1022.",
+                    "Zero friction policy match."
+                ]
+            }
+        ];
+
+        let requestsState = [...initialRequests];
+        let activeRequestId = initialRequests[0].id;
+
+        // Initialize application
+        window.onload = function() {
+            renderRequestsTable();
+            renderDetailPanel(activeRequestId);
+            lucide.createIcons();
+        };
+
+        // --- FILTERING LOGIC ---
+        function filterRequests() {
+            const searchQuery = document.getElementById('search-input').value.toLowerCase();
+            const riskFilter = document.getElementById('filter-risk').value;
+            const recFilter = document.getElementById('filter-recommendation').value;
+
+            const filtered = requestsState.filter(req => {
+                const matchesSearch = req.employee.name.toLowerCase().includes(searchQuery) ||
+                                      req.tool.toLowerCase().includes(searchQuery) ||
+                                      req.employee.department.toLowerCase().includes(searchQuery) ||
+                                      req.jiraContext.ticket.toLowerCase().includes(searchQuery);
+                
+                const matchesRisk = (riskFilter === 'ALL') || (req.riskLevel === riskFilter);
+                const matchesRec = (recFilter === 'ALL') || (req.recommendation === recFilter);
+
+                return matchesSearch && matchesRisk && matchesRec;
+            });
+
+            renderRequestsTable(filtered);
+            document.getElementById('showing-count').innerText = `Showing ${filtered.length} of ${requestsState.length} requests`;
+        }
+
+        // --- RENDER TABLE ---
+        function renderRequestsTable(dataToRender = requestsState) {
+            const tbody = document.getElementById('request-table-body');
+            tbody.innerHTML = '';
+
+            if (dataToRender.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="py-12 text-center text-slate-500">
+                            <i data-lucide="inbox" class="w-8 h-8 mx-auto mb-2 opacity-50"></i>
+                            <p>No access requests found matching filters.</p>
+                        </td>
+                    </tr>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            dataToRender.forEach(req => {
+                const isActive = req.id === activeRequestId;
+                const row = document.createElement('tr');
+                row.className = `hover:bg-slate-900/80 transition cursor-pointer ${isActive ? 'bg-blue-950/30 border-l-4 border-l-blue-500' : ''}`;
+                row.onclick = () => selectRequest(req.id);
+
+                // Risk Badge colors
+                let riskBadgeClass = '';
+                if(req.riskLevel === 'LOW') riskBadgeClass = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+                else if(req.riskLevel === 'MEDIUM') riskBadgeClass = 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+                else if(req.riskLevel === 'HIGH') riskBadgeClass = 'bg-orange-500/10 text-orange-400 border-orange-500/20';
+                else if(req.riskLevel === 'CRITICAL') riskBadgeClass = 'bg-red-500/10 text-red-400 border-red-500/20';
+
+                // Recommendation Badge
+                let recBadgeClass = '';
+                let recIcon = '';
+                if(req.recommendation === 'AUTO_APPROVE') {
+                    recBadgeClass = 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30';
+                    recIcon = 'check-circle-2';
+                } else if(req.recommendation === 'GUARDRAIL') {
+                    recBadgeClass = 'bg-blue-500/15 text-blue-300 border-blue-500/30';
+                    recIcon = 'shield-alert';
+                } else if(req.recommendation === 'MANUAL_REVIEW') {
+                    recBadgeClass = 'bg-amber-500/15 text-amber-300 border-amber-500/30';
+                    recIcon = 'alert-circle';
+                } else if(req.recommendation === 'DENY') {
+                    recBadgeClass = 'bg-red-500/15 text-red-300 border-red-500/30';
+                    recIcon = 'x-circle';
+                }
+
+                row.innerHTML = `
+                    <td class="py-3 px-4">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 font-bold text-slate-300 flex items-center justify-center shrink-0 text-xs">
+                                ${req.employee.avatar}
+                            </div>
+                            <div>
+                                <div class="font-semibold text-slate-200">${req.employee.name}</div>
+                                <div class="text-[11px] text-slate-400">${req.employee.role}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="py-3 px-3">
+                        <div class="font-medium text-slate-200">${req.tool}</div>
+                        <div class="text-[11px] text-slate-400 truncate max-w-[140px]">${req.accessType}</div>
+                    </td>
+                    <td class="py-3 px-3">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border ${riskBadgeClass}">
+                            ${req.riskLevel} (${req.riskScore})
+                        </span>
+                    </td>
+                    <td class="py-3 px-3">
+                        <span class="inline-flex items-center space-x-1 px-2.5 py-1 rounded-md text-[11px] font-medium border ${recBadgeClass}">
+                            <i data-lucide="${recIcon}" class="w-3.5 h-3.5 shrink-0"></i>
+                            <span>${req.recommendationTitle}</span>
+                        </span>
+                    </td>
+                    <td class="py-3 px-3">
+                        <div class="flex items-center space-x-1.5">
+                            <div class="w-12 bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                                <div class="bg-blue-500 h-1.5 rounded-full" style="width: ${req.confidence}%"></div>
+                            </div>
+                            <span class="text-[11px] font-medium text-slate-400">${req.confidence}%</span>
+                        </div>
+                    </td>
+                    <td class="py-3 px-4 text-right">
+                        <button onclick="event.stopPropagation(); selectRequest('${req.id}')" class="p-1.5 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-slate-200">
+                            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+            lucide.createIcons();
+        }
+
+        // --- SELECT REQUEST ---
+        function selectRequest(id) {
+            activeRequestId = id;
+            renderRequestsTable();
+            renderDetailPanel(id);
+        }
+
+        // --- RENDER DRAWER / DETAIL PANEL ---
+        function renderDetailPanel(id) {
+            const req = requestsState.find(r => r.id === id);
+            const panel = document.getElementById('detail-panel');
+
+            if (!req) {
+                panel.innerHTML = `<div class="p-8 text-center text-slate-500">Select a request to inspect AI analysis.</div>`;
+                return;
+            }
+
+            // Status theme
+            let borderTheme = 'border-blue-500/30';
+            let bgHeader = 'bg-blue-950/20';
+            let badgeBg = 'bg-blue-500/10 text-blue-300 border-blue-500/30';
+
+            if(req.recommendation === 'AUTO_APPROVE') {
+                borderTheme = 'border-emerald-500/30';
+                bgHeader = 'bg-emerald-950/20';
+                badgeBg = 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30';
+            } else if(req.recommendation === 'DENY') {
+                borderTheme = 'border-red-500/30';
+                bgHeader = 'bg-red-950/20';
+                badgeBg = 'bg-red-500/10 text-red-300 border-red-500/30';
+            } else if(req.recommendation === 'MANUAL_REVIEW') {
+                borderTheme = 'border-amber-500/30';
+                bgHeader = 'bg-amber-950/20';
+                badgeBg = 'bg-amber-500/10 text-amber-300 border-amber-500/30';
+            }
+
+            panel.innerHTML = `
+                <!-- Drawer Header -->
+                <div class="p-5 border-b border-slate-800 ${bgHeader} flex items-center justify-between shrink-0">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-slate-200 text-sm">
+                            ${req.employee.avatar}
+                        </div>
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <h2 class="font-bold text-slate-100 text-sm">${req.employee.name}</h2>
+                                <span class="text-[10px] text-slate-400 font-mono">(${req.id})</span>
+                            </div>
+                            <p class="text-xs text-slate-400">${req.employee.role} • ${req.employee.department}</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-[10px] uppercase tracking-wider text-slate-500 font-semibold block">Risk Score</span>
+                        <span class="text-sm font-bold ${req.riskScore > 60 ? 'text-orange-400' : 'text-emerald-400'}">${req.riskScore} / 100</span>
+                    </div>
+                </div>
+
+                <!-- Scrollable Body Content -->
+                <div class="flex-1 overflow-y-auto p-5 space-y-5">
+                    
+                    <!-- AI RECOMMENDATION BANNER -->
+                    <div class="p-4 rounded-xl border ${borderTheme} bg-slate-950/60 shadow-lg space-y-3">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <i data-lucide="cpu" class="w-4 h-4 text-blue-400"></i>
+                                <span class="text-xs font-bold uppercase tracking-wider text-slate-300">AI Access Suggestion</span>
+                            </div>
+                            <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold border ${badgeBg}">
+                                ${req.recommendationTitle}
+                            </span>
+                        </div>
+                        <div class="text-xs text-slate-300 leading-relaxed font-mono bg-slate-900/80 p-3 rounded-lg border border-slate-800">
+                            Confidence Level: <span class="text-blue-400 font-bold">${req.confidence}%</span> based on communication signals and compliance policies.
+                        </div>
+                    </div>
+
+                    <!-- STEP BY STEP REASONING BREAKDOWN -->
+                    <div class="space-y-2">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center space-x-1.5">
+                            <i data-lucide="git-commit" class="w-3.5 h-3.5 text-blue-400"></i>
+                            <span>AI Decision Reasoning Trail</span>
+                        </h3>
+                        <div class="bg-slate-950/40 rounded-xl border border-slate-800/80 p-3 space-y-2">
+                            ${req.aiReasoning.map(step => `
+                                <div class="flex items-start space-x-2.5 text-xs text-slate-300">
+                                    <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5"></i>
+                                    <span>${step}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- CONTEXT EVIDENCE SPLIT (Slack + Jira) -->
+                    <div class="grid grid-cols-1 gap-4">
+                        
+                        <!-- Slack Evidence -->
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center space-x-1.5">
+                                    <i data-lucide="message-square" class="w-3.5 h-3.5 text-emerald-400"></i>
+                                    <span>Slack Thread Context (${req.slackContext.channel})</span>
+                                </span>
+                                ${req.slackContext.verified ? '<span class="text-[10px] text-emerald-400 flex items-center space-x-1"><i data-lucide="shield-check" class="w-3 h-3"></i><span>Verified Signal</span></span>' : ''}
+                            </div>
+                            <div class="bg-slate-950 rounded-xl border border-slate-800 p-3.5 text-xs font-mono text-slate-300 whitespace-pre-wrap leading-relaxed">
+${req.slackContext.snippet}
+                            </div>
+                        </div>
+
+                        <!-- Jira Ticket Evidence -->
+                        <div class="space-y-2">
+                            <span class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center space-x-1.5">
+                                <i data-lucide="ticket" class="w-3.5 h-3.5 text-blue-400"></i>
+                                <span>Jira Sprint Verification</span>
+                            </span>
+                            <div class="bg-slate-950 rounded-xl border border-slate-800 p-3.5 space-y-2 text-xs">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-bold text-blue-400 font-mono">${req.jiraContext.ticket}</span>
+                                    <span class="px-2 py-0.5 bg-slate-800 text-slate-300 rounded text-[10px]">${req.jiraContext.status}</span>
+                                </div>
+                                <p class="text-slate-200 font-medium">${req.jiraContext.summary}</p>
+                                <p class="text-[11px] text-slate-500">Sprint: ${req.jiraContext.sprint}</p>
+                            </div>
+                        </div>
+
+                        <!-- Matched Policy Rule -->
+                        <div class="space-y-2">
+                            <span class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center space-x-1.5">
+                                <i data-lucide="book-open" class="w-3.5 h-3.5 text-purple-400"></i>
+                                <span>Policy Citation</span>
+                            </span>
+                            <div class="bg-slate-950/60 rounded-xl border border-purple-900/30 p-3.5 space-y-1 text-xs">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-bold text-purple-300">${req.policyMatch.ruleId}: ${req.policyMatch.title}</span>
+                                </div>
+                                <p class="text-slate-400 text-[11px] leading-relaxed">${req.policyMatch.detail}</p>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- Action Footer Bar -->
+                <div class="p-4 border-t border-slate-800 bg-slate-900 flex flex-wrap items-center justify-between gap-2 shrink-0">
+                    <button onclick="handleAction('REJECT', '${req.id}')" class="px-3 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-lg text-xs font-medium transition">
+                        Reject Access
+                    </button>
+
+                    <div class="flex items-center space-x-2">
+                        <button onclick="handleAction('TEMPORARY', '${req.id}')" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-lg text-xs font-medium transition">
+                            Grant 8-Hr Temp
+                        </button>
+                        <button onclick="handleAction('APPROVE', '${req.id}')" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-semibold shadow-md shadow-blue-600/30 transition flex items-center space-x-1.5">
+                            <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
+                            <span>Execute Approval</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        // --- ACTION HANDLERS ---
+        function handleAction(actionType, reqId) {
+            const reqIndex = requestsState.findIndex(r => r.id === reqId);
+            if (reqIndex === -1) return;
+
+            const req = requestsState[reqIndex];
+            
+            if (actionType === 'APPROVE') {
+                alert(`SUCCESS: Access granted for ${req.employee.name} to tool: ${req.tool}. Okta identity provisioned.`);
+                requestsState.splice(reqIndex, 1);
+            } else if (actionType === 'TEMPORARY') {
+                alert(`GUARDRAIL APPLIED: 8-Hour temporary session token generated for ${req.employee.name}. Expiration timer scheduled.`);
+                requestsState.splice(reqIndex, 1);
+            } else if (actionType === 'REJECT') {
+                alert(`REJECTED: Request ${req.id} closed. Reason logged in audit trail.`);
+                requestsState.splice(reqIndex, 1);
+            }
+
+            // Update stats & render
+            if (requestsState.length > 0) {
+                activeRequestId = requestsState[0].id;
+            } else {
+                activeRequestId = null;
+            }
+            document.getElementById('stat-pending-count').innerText = `${requestsState.length} Requests`;
+            document.getElementById('badge-pending').innerText = requestsState.length;
+            filterRequests();
+        }
+
+        // --- SIMULATOR MODAL LOGIC ---
+        function openSimulatorModal() {
+            document.getElementById('simulator-modal').classList.remove('hidden');
+        }
+
+        function closeSimulatorModal() {
+            document.getElementById('simulator-modal').classList.add('hidden');
+        }
+
+        function openPolicyManagerModal() {
+            document.getElementById('policy-modal').classList.remove('hidden');
+        }
+
+        function closePolicyManagerModal() {
+            document.getElementById('policy-modal').classList.add('hidden');
+        }
+
+        function runSimulation() {
+            const name = document.getElementById('sim-name').value;
+            const role = document.getElementById('sim-role').value;
+            const tool = document.getElementById('sim-tool').value;
+            const level = document.getElementById('sim-level').value;
+            const slack = document.getElementById('sim-slack').value;
+            const jira = document.getElementById('sim-jira').value;
+
+            // Generate synthetic entry
+            const newId = `REQ-${Math.floor(1000 + Math.random() * 9000)}`;
+            const isHighRisk = tool.toLowerCase().includes('prod') || level.includes('Write') || level.includes('Admin');
+
+            const newReq = {
+                id: newId,
+                employee: {
+                    name: name,
+                    email: `${name.toLowerCase().replace(' ', '.')}@acme.io`,
+                    avatar: name.split(' ').map(n => n[0]).join(''),
+                    role: role,
+                    department: "Engineering / Data",
+                    manager: "Marcus Brody (Tech Lead)",
+                    tenure: "1 year"
+                },
+                tool: tool,
+                accessType: level,
+                riskLevel: isHighRisk ? "HIGH" : "LOW",
+                riskScore: isHighRisk ? 74 : 25,
+                recommendation: isHighRisk ? "GUARDRAIL" : "AUTO_APPROVE",
+                recommendationTitle: isHighRisk ? "Approve with Time-Bound Guardrail" : "Auto-Approve Request",
+                confidence: 92,
+                timestamp: "Just now",
+                slackContext: {
+                    channel: "#simulated-channel",
+                    snippet: slack,
+                    verified: true
+                },
+                jiraContext: {
+                    ticket: jira.split(':')[0] || "JIRA-SIM",
+                    summary: jira,
+                    status: "In Progress",
+                    sprint: "Current Sprint"
+                },
+                policyMatch: {
+                    ruleId: "POL-SIM-99",
+                    title: "Synthetic Access Evaluation",
+                    detail: "Cross-referenced employee context and role tier against SOC2 standards."
+                },
+                aiReasoning: [
+                    `Parsed user intent for tool: ${tool}.`,
+                    `Context match score: High (Matched Jira ticket ${jira.split(':')[0]}).`,
+                    isHighRisk ? "Production DB access triggers mandatory time-bound guardrail (8 hours)." : "Standard departmental tooling detected."
+                ]
+            };
+
+            requestsState.unshift(newReq);
+            activeRequestId = newId;
+            closeSimulatorModal();
+
+            document.getElementById('stat-pending-count').innerText = `${requestsState.length} Requests`;
+            document.getElementById('badge-pending').innerText = requestsState.length;
+            filterRequests();
+            selectRequest(newId);
+        }
+    </script>
+</body>
+</html>
